@@ -245,7 +245,7 @@ async function getReport(req) {
         // If there is no report we create one
         if (!report) {
             report = new Reports({
-                userid: req.body.id,
+                userid: id,
                 month: month,
                 year: year,
                 costs: {
