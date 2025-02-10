@@ -43,10 +43,10 @@ router.post('/addUser',function(req,res,next){
 router.post('/add', async function(req, res, next) {
     try {
         // Using findUser to find if the user exist
-        const user = await findUser(req);
+        const user = await findUser(req, res);
 
         // Using addCost to add new cost item
-        const cost = await addCost(req);
+        const cost = await addCost(req, res);
 
         // Update user total items added counter
         const result = await incrementTotal(req);

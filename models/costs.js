@@ -11,7 +11,7 @@ const CostsSchema = new Schema({
         type:String
     },
     userid : {
-        type:String
+        type:Number
     },
     sum: {
         type:Number

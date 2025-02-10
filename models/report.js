@@ -20,7 +20,7 @@ const ItemSchema = new Schema({
 // Report Schema for a specific user in a specific month and year divided all the cost items by categories
 const ReportSchema = new Schema({
     userid: {
-        type: String,
+        type: Number,
         required: true
     },
     year: {

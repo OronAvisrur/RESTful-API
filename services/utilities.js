@@ -129,8 +129,8 @@ async function addCost(req) {
         // Search if report is exist on the current user in the current date
         let reportSummary = await Reports.findOne({
             userid: id,
-            month: date.getMonth() + 1, // הוספת 1 כדי שהחודש יהיה בטווח 1-12
-            year: date.getFullYear()   // השנה הנוכחית
+            month: date.getMonth() + 1,
+            year: date.getFullYear()
         });
 
         // If there is no report we create one
