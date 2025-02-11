@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-var express = require('express');
-
 
 /**
  * This function attempts to connect to a MongoDB Atlas DataBase

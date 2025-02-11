@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getUser, findUser, addCost, incrementTotal, getReport, addUser } = require('../services/utilities');
+const { getUser, addCost, incrementTotal, getReport, addUser } = require('../services/utilities');
 
 /**
  * Handles the addition of a new user to the database
@@ -41,37 +41,16 @@ router.post('/addUser',function(req,res,next){
  * @returns {JSON} - JSON response with the added user details or error
  */
 router.post('/add', async function(req, res, next) {
+    const userid = req.body.userid;
     try {
         // Using findUser to find if the user exist
-        const user = await findUser(req, res);
+        const user = await getUser(userid);
 
         // Using addCost to add new cost item
-        const cost = await addCost(req, res);
+        const cost = await addCost(req);
 
         // Update user total items added counter
         const result = await incrementTotal(req);
-
-        // If the function returned empty user or null - not supposed to but added for safety
-        if(!user) {
-            return res.status(404).json({
-                title: "Something went wrong",
-                message: "Can't find user with this ID"
-            });
-        }
-        // If the function returned empty cost or null - not supposed to but added for safety
-        else if(!cost) {
-            return res.status(404).json({
-                title: "Something went wrong",
-                message: "Issue adding the cost"
-            });
-        }
-        // If the function returned null - not supposed to but added for safety
-        else if(!result) {
-            return res.status(404).json({
-                title: "Something went wrong",
-                message: "Issue adding the cost to the report"
-            });
-        }
 
         // Return the JSON with the added cost details
         res.status(200).json(cost);
@@ -93,9 +72,9 @@ router.post('/add', async function(req, res, next) {
  * @returns {JSON} - JSON response with the added user details or error
  */
 router.get('/users/:user_id',function(req,res,next){
-
+    const  userid = req.params.user_id;
     // Calling getUser to find and return user by ID and Return the JSON with user details or error if necessary
-    getUser(req.params.user_id).then((user) =>
+    getUser(userid).then((user) =>
         res.status(200).json({id : user[0].id, name: user[0].first_name, last_name: user[0].last_name, total: user[0].total})).catch((error) =>
         res.status(404).json({title: "Error name: " + error.name, error: error.message}));
 
@@ -110,8 +89,11 @@ router.get('/users/:user_id',function(req,res,next){
  * @returns {JSON} - JSON response with the added user details or error
  */
 router.get('/report', function(req, res, next) {
+    // Getting the parameters from the request
+    const { id, year, month } = req.query;
+
     // Calling getReport to find and return the requested report by ID and date
-    getReport(req)
+    getReport(id, month, year)
         .then((report) => {
             if (!report) {
                 return res.status(404).json({

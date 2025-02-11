@@ -10,7 +10,6 @@ const Reports = require('../models/report');
  */
 async function getUser(user_id) {
     try {
-
         // Check if all the parameters sent correctly
         if (!user_id) {
             const error = new Error();
@@ -30,7 +29,7 @@ async function getUser(user_id) {
             const error = new Error();
 
             error.name = "Empty User";
-            error.message = "find returned Empty array!";
+            error.message = "No user was found!";
 
             // Returning an error
             throw error;
@@ -39,51 +38,6 @@ async function getUser(user_id) {
         //If user was found return him
         return user;
     } catch (error) {
-        //For any other error then empty array during the process return error
-        throw new Error(error.message);
-    }
-}
-
-/**
- * Finds a user in the database by the ID provided in the request.
- *
- * @param {Object} req - The request object contains the user ID in the body.
- * @returns {Promise<Object>} Returns the user object or an error if the user is not found.
- */
-async function findUser(req){
-    try {
-
-        const id = req.body;
-
-        // Check if all the parameters sent correctly
-        if (!id) {
-            const error = new Error();
-
-            error.name = "Missing parameters!";
-            error.message = "Needed parameters are: ID";
-
-            // Returning an error
-            throw error;
-        }
-
-        //Trying to get the user from the DataBase
-        const user = await Users.find({ id: id });
-
-        //If the DateBase return empty array no user was found therefore return error
-        if(user.length === 0) {
-            const error = new Error();
-
-            error.name = "Empty User";
-            error.message = "Find function returned Empty array!";
-
-            // Returning an error
-            throw error;
-        }
-
-        //If user was found return him
-        return user;
-    }
-    catch (error) {
         //For any other error then empty array during the process return error
         throw new Error(error.message);
     }
@@ -100,10 +54,10 @@ async function addCost(req) {
     const currentDate = new Date();
     try {
 
-        const { id, description, category, sum } = req.body;
+        const { userid, description, category, sum } = req.body;
 
         // Check if all the parameters sent correctly
-        if (!id || !description || !category || !sum ) {
+        if (!userid || !description || !category || !sum ) {
             const error = new Error();
 
             error.name = "Missing parameters!";
@@ -118,41 +72,14 @@ async function addCost(req) {
 
         // Creating new Cost and updating it on the DataBase
         const cost = await Costs.create({
-            userid: id,
+            userid: userid,
             description: description,
             category: category,
             sum: sum,
             date: date
         });
 
-
-        // Search if report is exist on the current user in the current date
-        let reportSummary = await Reports.findOne({
-            userid: id,
-            month: date.getMonth() + 1,
-            year: date.getFullYear()
-        });
-
-        // If there is no report we create one
-        if (!reportSummary) {
-            reportSummary = new Reports({
-                userid: id,
-                month: date.getMonth() + 1,
-                year: date.getFullYear(),
-                costs: {
-                    //Array of all the categories at the report
-                    food: [],
-                    education: [],
-                    health: [],
-                    housing: [],
-                    sport: []
-                }
-            });
-
-            // Saving our new Report object as document in the DateBase
-            await reportSummary.save();
-        }
-
+        let reportSummary = await getReport(userid, date.getMonth() + 1, date.getFullYear());
 
         // Getting the category array of items
         const categoryItems = reportSummary.costs[category];
@@ -185,7 +112,7 @@ async function addCost(req) {
  */
 async function incrementTotal(req) {
     try {
-        const id = req.body;
+        const id = req.body.userid;
 
         // Check if all the parameters sent correctly
         if (!id) {
@@ -215,13 +142,17 @@ async function incrementTotal(req) {
 
 /**
  * Return a report based on the given parameters: ID, year, and month
+ * If no report exists for the given parameters, a new report is created and returned.
  *
- * @param {Object} req - The request object contains the query parameters: id, year, and month.
- * @returns {Promise<Object|null>} Returns the report object if found or null if no report is found of error if there was any other error
+ * @async
+ * @function getReport
+ * @param {string} id - The ID of the user for whom the report is being retrieved.
+ * @param {number} month - The month (1-12) of the report.
+ * @param {number} year - The year of the report.
+ * @throws {Error} Will throw an error if any of the parameters (id, month, year) are missing or if an issue occurs during the process.
+ * @returns {Promise<Object>} A promise that resolves to the report object, which contains the user's report data for the given month and year.
  */
-async function getReport(req) {
-    // Getting the parameters from the request
-    const { id, year, month } = req.query;
+async function getReport(id, month, year) {
 
     // Check if all the parameters sent correctly
     if (!id || !year || !month) {
@@ -279,10 +210,10 @@ async function getReport(req) {
 async function addUser(req){
     try {
 
-        const { id, firstName, lastName, birthday, maritalStatus } = req.body;
+        const { id, first_name, last_name, birthday, marital_status } = req.body;
 
         // Check if all the parameters sent correctly
-        if (!id || !firstName || !lastName || !birthday || !maritalStatus ) {
+        if (!id || !first_name || !last_name || !birthday || !marital_status ) {
             const error = new Error();
 
             error.name = "Missing parameters!";
@@ -296,10 +227,10 @@ async function addUser(req){
         // user is an object with the created user details
         const user = await Users.create({
             id: req.body.id,
-            first_name: firstName,
-            last_name: lastName,
+            first_name: first_name,
+            last_name: last_name,
             birthday: birthday,
-            marital_status: maritalStatus,
+            marital_status: marital_status,
             total: 0
         });
 
@@ -315,7 +246,6 @@ async function addUser(req){
 // Exports the functions so they can be accessed from the api module
 module.exports = {
     getUser,
-    findUser,
     addCost,
     incrementTotal,
     getReport,
