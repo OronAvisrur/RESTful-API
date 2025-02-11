@@ -128,8 +128,8 @@ async function incrementTotal(req) {
         // Finding user in the DataBase by ID and increment his total items count by 1 and saving the result as an object
         // result contain the updated user returned by updateOne function
         const result = await Users.updateOne(
-            { id: id }, // חיפוש משתמש לפי ה-ID
-            { $inc: { total: 1 } } // העלאת הערך של total ב-1
+            { id: id },
+            { $inc: { total: 1 } }
         );
 
         //return the user that his details has changed
